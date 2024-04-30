@@ -34,7 +34,7 @@
   
 <script>
 import Papa from 'papaparse';
-import VTimeline from './src/VTimeline.js'; // Ensure the path is correct relative to this file
+import VTimeline from '../VTimeline.js'; // Ensure the path is correct relative to this file
 
 export default {
   mounted() {

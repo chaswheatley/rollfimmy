@@ -1,18 +1,71 @@
 <template>
-    <div>
-        <button @click="handleFilters">Filters</button>
+  <div>
+    <button @click="toggleFilters">Filters</button>
+    <div v-if="showFilters">
+      <div>
+        <label>Filter by Year:</label>
+        <input type="range" min="1920" max="2020" v-model="selectedYear">
+      </div>
+      <div>
+        <label>Filter by Genre:</label>
+        <div v-for="(genre, index) in genres" :key="index">
+          <input type="checkbox" :value="genre" v-model="selectedGenres"> {{ genre }}
+        </div>
+      </div>
+      <button @click="applyFilters">Apply Filters</button>
     </div>
+    <div>
+      <ul>
+        <li v-for="(movie, index) in filteredMovies" :key="index">{{ movie.title }} - {{ movie.year }} - {{ movie.genre }}</li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script>
+import axios from 'axios'; 
 export default {
-    methods: {
-        handleFilters() {
-            // Add filtering logic
-        }
-    }
-}
+  data() {
+    return {
+      showFilters: false,
+      selectedYear: null,
+      selectedGenres: [],
+      movies: [], // Array to store movies data
+      filteredMovies: [], // Array to store filtered movies
+      genres: ['Action', 'Drama', 'Comedy', 'Thriller'], 
+    };
+  },
+  methods: {
+    async toggleFilters() {
+      this.showFilters = !this.showFilters;
+      if (this.showFilters) {
+        await this.loadMovies();
+      }
+    },
+    async loadMovies() {
+      try {
+        const response = await axios.get('src/data/imdb_top_1000.csv'); 
+        this.movies = this.parseCSV(response.data);
+      } catch (error) {
+        console.error('Error loading movies:', error);
+      }
+    },
+    parseCSV(csvData) {
+      // Need to Implement CSV parsing logic here
+      // Placeholder to show structure
+      console.log("Parsing CSV Data");
+    },
+    applyFilters() {
+      this.filteredMovies = this.movies.filter(movie => {
+        let yearMatch = this.selectedYear ? movie.year === this.selectedYear : true;
+        let genreMatch = this.selectedGenres.length > 0 ? this.selectedGenres.includes(movie.genre) : true;
+        return yearMatch && genreMatch;
+      });
+    },
+  },
+};
 </script>
+
 
 <style>
     :root {
