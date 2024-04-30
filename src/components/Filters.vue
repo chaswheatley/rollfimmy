@@ -23,7 +23,9 @@
 </template>
 
 <script>
-import axios from 'axios'; 
+import axios from 'axios';
+import { filterByYear, filterByGenres } from './filters.js';
+
 export default {
   data() {
     return {
@@ -32,7 +34,7 @@ export default {
       selectedGenres: [],
       movies: [], // Array to store movies data
       filteredMovies: [], // Array to store filtered movies
-      genres: ['Action', 'Drama', 'Comedy', 'Thriller'], 
+      genres: ['Action', 'Drama', 'Comedy', 'Thriller'],
     };
   },
   methods: {
@@ -44,27 +46,41 @@ export default {
     },
     async loadMovies() {
       try {
-        const response = await axios.get('src/data/imdb_top_1000.csv'); 
+        const response = await axios.get('src/data/imdb_top_1000.csv');
         this.movies = this.parseCSV(response.data);
+        this.applyFilters(); // Apply filters when movies are loaded
       } catch (error) {
         console.error('Error loading movies:', error);
       }
     },
     parseCSV(csvData) {
-      // Need to Implement CSV parsing logic here
-      // Placeholder to show structure
-      console.log("Parsing CSV Data");
+      const lines = csvData.split('\n');
+      const headers = lines[0].split(',');
+
+      const movies = [];
+      for (let i = 1; i < lines.length; i++) {
+        const currentLine = lines[i].split(',');
+        if (currentLine.length === headers.length) {
+          const movie = {};
+          headers.forEach((header, index) => {
+            movie[header.trim()] = currentLine[index].trim();
+          });
+          movies.push(movie);
+        }
+      }
+      return movies;
     },
     applyFilters() {
       this.filteredMovies = this.movies.filter(movie => {
-        let yearMatch = this.selectedYear ? movie.year === this.selectedYear : true;
-        let genreMatch = this.selectedGenres.length > 0 ? this.selectedGenres.includes(movie.genre) : true;
+        let yearMatch = this.selectedYear ? filterByYear([movie], this.selectedYear).length > 0 : true;
+        let genreMatch = this.selectedGenres.length > 0 ? filterByGenres([movie], this.selectedGenres).length > 0 : true;
         return yearMatch && genreMatch;
       });
     },
   },
 };
 </script>
+
 
 
 <style>
